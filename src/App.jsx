@@ -42,6 +42,10 @@ const AppProvider = ({ children }) => {
     { id: 'PAR05', name: 'هشام الغربي', phone: '28998877' },
     { id: 'PAR06', name: 'ليلى العياري', phone: '27778899' },
   ]);
+   const [timetables, setTimetables] = useState({
+        'C1A': { 'Lundi': { 'Séance 1': { subjectId: 'SUB01', teacherId: 'T102' } }, 'Mardi': { 'Séance 2': { subjectId: 'SUB03', teacherId: 'T101' } } },
+        'C2B': { 'Lundi': { 'Séance 2': { subjectId: 'SUB03', teacherId: 'T101' } } }
+   });
 
   const value = {
       currentUser, 
@@ -62,6 +66,7 @@ const AppProvider = ({ children }) => {
       schoolYear, setSchoolYear,
       trimesters, setTrimesters,
       parents, setParents,
+      timetables, setTimetables,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
@@ -139,6 +144,32 @@ const HomeworkForm = ({ onSave, homework, onClose, classId }) => {
             <div className="mt-8 flex justify-end space-x-4 space-x-reverse"><button type="button" onClick={onClose} className="py-2 px-6 bg-gray-200 rounded-lg font-semibold hover:bg-gray-300">إلغاء</button><button type="submit" className="py-2 px-6 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700">حفظ</button></div>
         </form>
     );
+};
+const SessionForm = ({ onSave, sessionData, onClose, day, time, classId }) => {
+    const { subjects, teachers } = useContext(AppContext);
+    const [formData, setFormData] = useState({ subjectId: '', teacherId: '' });
+
+    useEffect(() => {
+        if(sessionData){
+            setFormData(sessionData)
+        } else {
+            setFormData({ subjectId: '', teacherId: '' });
+        }
+    }, [sessionData]);
+
+    const handleChange = (e) => { const { name, value } = e.target; setFormData(prev => ({ ...prev, [name]: value })); };
+    const handleSubmit = (e) => { 
+        e.preventDefault(); 
+        onSave({ ...formData, day, time, classId });
+    };
+
+    return (
+         <form onSubmit={handleSubmit} className="space-y-4">
+            <div><label className="block mb-1 font-semibold">المادة</label><select name="subjectId" value={formData.subjectId} onChange={handleChange} className="w-full p-2 border rounded-lg bg-white" required><option value="" disabled>اختر المادة</option>{subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</select></div>
+            <div><label className="block mb-1 font-semibold">المعلم</label><select name="teacherId" value={formData.teacherId} onChange={handleChange} className="w-full p-2 border rounded-lg bg-white" required><option value="" disabled>اختر معلما</option>{teachers.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}</select></div>
+            <div className="mt-8 flex justify-end space-x-4 space-x-reverse"><button type="button" onClick={onClose} className="py-2 px-6 bg-gray-200 rounded-lg font-semibold hover:bg-gray-300">إلغاء</button><button type="submit" className="py-2 px-6 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700">حفظ الحصة</button></div>
+        </form>
+    )
 };
 
 // --- COMPOSANTS DE GESTION (CRUD) ---
@@ -251,6 +282,129 @@ const HomeworkManagement = () => {
     );
     
     return (<><button onClick={() => setSelectedClass(null)} className="flex items-center text-gray-600 font-semibold mb-4"><ArrowRightCircle className="w-5 h-5 ml-2" />الرجوع إلى قائمة الأقسام</button><CrudComponent items={classHomeworks} setItems={setHomeworks} FormComponent={HomeworkForm} columns={columns} renderItem={renderItem} itemSingular="واجب" itemPlural={`الواجبات لقسم ${selectedClass.name}`} classId={selectedClass.id} /></>);
+};
+
+// --- COMPOSANTS EMPLOI DU TEMPS ---
+const TimetableGrid = ({ timetableData, onCellClick, isEditable = false }) => {
+    const { subjects, teachers } = useContext(AppContext);
+    const days = ['الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+    const timeSlots = Array.from({ length: 8 }, (_, i) => `الحصة ${i + 1}`);
+    
+    const getSessionInfo = (day, time) => {
+        const session = timetableData?.[day]?.[time];
+        if (!session) return null;
+        const subject = subjects.find(s => s.id === session.subjectId);
+        const teacher = teachers.find(t => t.id === session.teacherId);
+        return { subject, teacher };
+    };
+
+    return (
+        <div className="overflow-x-auto">
+            <table className="w-full border-collapse border border-gray-300 text-center">
+                <thead>
+                    <tr className="bg-gray-100">
+                        <th className="p-2 border border-gray-200">الحصة</th>
+                        {days.map(day => <th key={day} className="p-2 border border-gray-200">{day}</th>)}
+                    </tr>
+                </thead>
+                <tbody>
+                    {timeSlots.map(time => (
+                        <tr key={time}>
+                            <td className="p-2 border border-gray-200 font-semibold bg-gray-50">{time}</td>
+                            {days.map(day => {
+                                const sessionInfo = getSessionInfo(day, time);
+                                return (
+                                    <td key={day} onClick={() => isEditable && onCellClick(day, time, sessionInfo)} className={`p-2 border border-gray-200 h-24 ${isEditable ? 'cursor-pointer hover:bg-blue-50' : ''}`}>
+                                        {sessionInfo ? (
+                                            <div className="bg-blue-100 p-2 rounded-md h-full flex flex-col justify-center">
+                                                <p className="font-bold text-blue-800">{sessionInfo.subject?.name}</p>
+                                                <p className="text-sm text-gray-600">{sessionInfo.teacher?.name}</p>
+                                            </div>
+                                        ) : (isEditable ? <Plus className="mx-auto text-gray-400" /> : null)}
+                                    </td>
+                                );
+                            })}
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
+    );
+};
+const TimetableManagement = () => {
+    const { classes, timetables, setTimetables } = useContext(AppContext);
+    const [selectedClassId, setSelectedClassId] = useState('');
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingSlot, setEditingSlot] = useState(null);
+
+    const handleCellClick = (day, time, sessionData) => {
+        setEditingSlot({ day, time, sessionData });
+        setIsModalOpen(true);
+    };
+
+    const handleSaveSession = (sessionData) => {
+        const { day, time, classId, subjectId, teacherId } = sessionData;
+        const newTimetables = { ...timetables };
+        if (!newTimetables[classId]) newTimetables[classId] = {};
+        if (!newTimetables[classId][day]) newTimetables[classId][day] = {};
+        newTimetables[classId][day][time] = { subjectId, teacherId };
+        setTimetables(newTimetables);
+        setIsModalOpen(false);
+    };
+    
+    return (
+        <div className="p-6 bg-white rounded-xl shadow-lg">
+            <h2 className="text-2xl font-bold text-gray-700 mb-6">إدارة جداول الأوقات</h2>
+            <div className="mb-4">
+                <label className="block mb-2 font-semibold">اختر قسما:</label>
+                <select value={selectedClassId} onChange={e => setSelectedClassId(e.target.value)} className="w-full md:w-1/3 p-3 border rounded-lg bg-white">
+                    <option value="">-- الأقسام --</option>
+                    {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                </select>
+            </div>
+            {selectedClassId && <TimetableGrid timetableData={timetables[selectedClassId]} onCellClick={handleCellClick} isEditable={true} />}
+             <FormModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={`تحديد حصة لـ ${editingSlot?.day} (${editingSlot?.time})`}>
+                <SessionForm onSave={handleSaveSession} onClose={() => setIsModalOpen(false)} sessionData={editingSlot?.sessionData} day={editingSlot?.day} time={editingSlot?.time} classId={selectedClassId} />
+            </FormModal>
+        </div>
+    );
+};
+const ViewTimetable = () => {
+    const { currentUser, classes, timetables, teachers, students } = useContext(AppContext);
+    
+    let classId = null;
+    let title = "جدول الأوقات";
+    let filteredTimetable = {};
+
+    if(currentUser.role === 'parent') {
+        const child = students.find(s => s.id === currentUser.childId);
+        if(child) {
+            classId = child.classId;
+            const className = classes.find(c=> c.id === classId)?.name || '';
+            title = `جدول أوقات قسم: ${className}`
+            filteredTimetable = timetables[classId] || {};
+        }
+    } else if (currentUser.role === 'teacher') {
+        title = `جدول أوقاتي`;
+        Object.entries(timetables).forEach(([classId, classTimetable]) => {
+            Object.entries(classTimetable).forEach(([day, sessions]) => {
+                Object.entries(sessions).forEach(([time, session]) => {
+                    if (session.teacherId === currentUser.id) {
+                        if (!filteredTimetable[day]) filteredTimetable[day] = {};
+                        filteredTimetable[day][time] = session;
+                    }
+                });
+            });
+        });
+    }
+
+
+    return (
+        <div className="p-6 bg-white rounded-xl shadow-lg">
+            <h2 className="text-2xl font-bold text-gray-700 mb-6">{title}</h2>
+            <TimetableGrid timetableData={filteredTimetable} isEditable={false} />
+        </div>
+    );
 };
 
 // --- COMPOSANTS ESPACE PARENT ET ADMIN ---
@@ -488,14 +642,15 @@ const Dashboard = () => {
             childhomework: <ChildHomework />, 
             messages: <Messages />,
             schoolyear: <SchoolYearManagement />,
+            timetable: {admin: <TimetableManagement/>, teacher: <ViewTimetable />, parent: <ViewTimetable />}[currentUser.role],
         };
         return components[activeComponent.replace(/-/g, '')] || <h2 className="text-3xl font-bold text-gray-700">مرحبا بك (قيد الإنشاء)</h2>;
     };
     
     const menuItems = {
-      admin: [ { id: 'home', label: 'الرئيسية', icon: Home }, { id: 'students', label: 'إدارة التلاميذ', icon: Users }, { id: 'teachers', label: 'إدارة المعلمين', icon: BookUser }, { id: 'parents', label: 'إدارة الأولياء', icon: Users }, { id: 'classes', label: 'إدارة الأقسام', icon: School }, { id: 'subjects', label: 'إدارة المواد', icon: Book }, {id: 'school-year', label: 'السنة الدراسية', icon: Settings}, { id: 'announcements', label: 'الإعلانات', icon: Megaphone } ],
-      teacher: [ { id: 'home', label: 'الرئيسية', icon: Home }, { id: 'my-classes', label: 'أقسامي', icon: School }, { id: 'grades', label: 'إدخال الأعداد', icon: GraduationCap }, { id: 'attendance', label: 'الحضور والغياب', icon: ClipboardList }, {id: 'homework', label: 'الواجبات المنزلية', icon: Book}, { id: 'announcements', label: 'الإعلانات', icon: Megaphone }, { id: 'messages', label: 'الرسائل', icon: MessageSquare } ],
-      parent: [ { id: 'home', label: 'الرئيسية', icon: Home }, { id: 'child-grades', label: 'أعداد ابني/ابنتي', icon: GraduationCap }, { id: 'child-attendance', label: 'حضور ابني/ابنتي', icon: ClipboardList }, { id: 'child-homework', label: 'الواجبات', icon: Book }, { id: 'announcements', label: 'الإعلانات', icon: Megaphone }, { id: 'messages', label: 'الرسائل', icon: MessageSquare } ]
+      admin: [ { id: 'home', label: 'الرئيسية', icon: Home }, { id: 'students', label: 'إدارة التلاميذ', icon: Users }, { id: 'teachers', label: 'إدارة المعلمين', icon: BookUser }, { id: 'parents', label: 'إدارة الأولياء', icon: Users }, { id: 'classes', label: 'إدارة الأقسام', icon: School }, { id: 'subjects', label: 'إدارة المواد', icon: Book }, {id: 'school-year', label: 'السنة الدراسية', icon: Settings}, {id: 'timetable', label: 'إدارة جداول الأوقات', icon: CalendarDays}, { id: 'announcements', label: 'الإعلانات', icon: Megaphone } ],
+      teacher: [ { id: 'home', label: 'الرئيسية', icon: Home }, { id: 'my-classes', label: 'أقسامي', icon: School }, { id: 'grades', label: 'إدخال الأعداد', icon: GraduationCap }, { id: 'attendance', label: 'الحضور والغياب', icon: ClipboardList }, {id: 'homework', label: 'الواجبات المنزلية', icon: Book}, {id: 'timetable', label: 'جدول أوقاتي', icon: CalendarDays}, { id: 'announcements', label: 'الإعلانات', icon: Megaphone }, { id: 'messages', label: 'الرسائل', icon: MessageSquare } ],
+      parent: [ { id: 'home', label: 'الرئيسية', icon: Home }, { id: 'child-grades', label: 'أعداد ابني/ابنتي', icon: GraduationCap }, { id: 'child-attendance', label: 'حضور ابني/ابنتي', icon: ClipboardList }, { id: 'child-homework', label: 'الواجبات', icon: Book }, {id: 'timetable', label: 'جدول الأوقات', icon: CalendarDays}, { id: 'announcements', label: 'الإعلانات', icon: Megaphone }, { id: 'messages', label: 'الرسائل', icon: MessageSquare } ]
     };
 
     return (
@@ -508,7 +663,7 @@ const Dashboard = () => {
                 <nav className="flex-1 px-4 py-4 overflow-y-auto"><ul>{(menuItems[currentUser?.role] || []).map(item => (<li key={item.id} className="mb-2"><a href="#" onClick={(e) => { e.preventDefault(); handleMenuItemClick(item.id); }} className={`flex items-center p-3 rounded-lg text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200 ${activeComponent === item.id ? 'bg-blue-100 text-blue-700 font-bold' : ''}`}><item.icon className="w-5 h-5" /><span className="mr-4">{item.label}</span></a></li>))}</ul></nav>
                 <div className="p-4 border-t flex-shrink-0"><button onClick={logout} className="w-full flex items-center justify-center p-3 rounded-lg text-red-600 hover:bg-red-50 transition-colors duration-200"><LogOut className="w-5 h-5"/><span className="mr-3 font-semibold">تسجيل الخروج</span></button></div>
             </aside>
-            <div className="flex-1 flex flex-col h-screen overflow-y-auto">
+            <div className="flex-1 flex flex-col h-screen overflow-hidden">
                 <header className="h-20 bg-white shadow-sm flex items-center justify-between px-4 md:px-8 flex-shrink-0">
                      <div className="flex items-center">
                         <button className="p-2 md:hidden" onClick={() => setIsSidebarOpen(true)}>
@@ -520,7 +675,7 @@ const Dashboard = () => {
                         <div><h1 className="text-lg md:text-xl font-bold text-gray-800">مرحبا بك، {currentUser?.name}</h1><p className="text-sm text-gray-500 capitalize">{currentUser?.role === 'admin' ? 'مدير' : currentUser?.role === 'teacher' ? 'معلم' : 'ولي'}</p></div>
                      </div>
                 </header>
-                <main className="flex-1 p-4 md:p-8">
+                <main className="flex-1 p-4 md:p-8 overflow-y-auto">
                     {renderComponent()}
                 </main>
                  <footer className="text-center p-4 text-gray-500 text-sm flex-shrink-0">

@@ -504,12 +504,12 @@ const Dashboard = () => {
             {isSidebarOpen && <div className="fixed inset-0 bg-black bg-opacity-50 z-20 md:hidden" onClick={() => setIsSidebarOpen(false)}></div>}
 
             <aside className={`fixed top-0 right-0 h-full w-64 bg-white shadow-lg flex flex-col transition-transform duration-300 ease-in-out z-30 ${isSidebarOpen ? 'translate-x-0' : 'translate-x-full'} md:relative md:translate-x-0`}>
-                <div className="h-20 flex items-center justify-center border-b"><School className="w-8 h-8 text-blue-600" /><span className="mr-3 font-bold text-xl text-gray-800">فضاء المعهد</span></div>
+                <div className="h-20 flex items-center justify-center border-b flex-shrink-0"><School className="w-8 h-8 text-blue-600" /><span className="mr-3 font-bold text-xl text-gray-800">فضاء المعهد</span></div>
                 <nav className="flex-1 px-4 py-4 overflow-y-auto"><ul>{(menuItems[currentUser?.role] || []).map(item => (<li key={item.id} className="mb-2"><a href="#" onClick={(e) => { e.preventDefault(); handleMenuItemClick(item.id); }} className={`flex items-center p-3 rounded-lg text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200 ${activeComponent === item.id ? 'bg-blue-100 text-blue-700 font-bold' : ''}`}><item.icon className="w-5 h-5" /><span className="mr-4">{item.label}</span></a></li>))}</ul></nav>
-                <div className="p-4 border-t"><button onClick={logout} className="w-full flex items-center justify-center p-3 rounded-lg text-red-600 hover:bg-red-50 transition-colors duration-200"><LogOut className="w-5 h-5"/><span className="mr-3 font-semibold">تسجيل الخروج</span></button></div>
+                <div className="p-4 border-t flex-shrink-0"><button onClick={logout} className="w-full flex items-center justify-center p-3 rounded-lg text-red-600 hover:bg-red-50 transition-colors duration-200"><LogOut className="w-5 h-5"/><span className="mr-3 font-semibold">تسجيل الخروج</span></button></div>
             </aside>
-            <main className="flex-1 flex flex-col overflow-hidden">
-                <header className="h-20 bg-white shadow-sm flex items-center justify-between px-4 md:px-8">
+            <div className="flex-1 flex flex-col h-screen overflow-y-auto">
+                <header className="h-20 bg-white shadow-sm flex items-center justify-between px-4 md:px-8 flex-shrink-0">
                      <div className="flex items-center">
                         <button className="p-2 md:hidden" onClick={() => setIsSidebarOpen(true)}>
                             <Menu className="w-6 h-6 text-gray-700" />
@@ -520,11 +520,13 @@ const Dashboard = () => {
                         <div><h1 className="text-lg md:text-xl font-bold text-gray-800">مرحبا بك، {currentUser?.name}</h1><p className="text-sm text-gray-500 capitalize">{currentUser?.role === 'admin' ? 'مدير' : currentUser?.role === 'teacher' ? 'معلم' : 'ولي'}</p></div>
                      </div>
                 </header>
-                <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-gray-100">{renderComponent()}</div>
+                <main className="flex-1 p-4 md:p-8">
+                    {renderComponent()}
+                </main>
                  <footer className="text-center p-4 text-gray-500 text-sm flex-shrink-0">
                     Développé par AYMEN GHARBI 2025
                 </footer>
-            </main>
+            </div>
         </div>
     );
 };

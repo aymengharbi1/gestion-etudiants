@@ -253,7 +253,6 @@ const HomeworkManagement = () => {
     return (<><button onClick={() => setSelectedClass(null)} className="flex items-center text-gray-600 font-semibold mb-4"><ArrowRightCircle className="w-5 h-5 ml-2" />الرجوع إلى قائمة الأقسام</button><CrudComponent items={classHomeworks} setItems={setHomeworks} FormComponent={HomeworkForm} columns={columns} renderItem={renderItem} itemSingular="واجب" itemPlural={`الواجبات لقسم ${selectedClass.name}`} classId={selectedClass.id} /></>);
 };
 
-
 // --- COMPOSANTS ESPACE PARENT ET ADMIN ---
 const ChildGrades = ({studentId}) => {
     const { students, grades, subjects, classes, trimesters } = useContext(AppContext);
@@ -522,7 +521,7 @@ const Dashboard = () => {
                      </div>
                 </header>
                 <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-gray-100">{renderComponent()}</div>
-                 <footer className="text-center p-4 text-gray-500 text-sm">
+                 <footer className="text-center p-4 text-gray-500 text-sm flex-shrink-0">
                     Développé par AYMEN GHARBI 2025
                 </footer>
             </main>

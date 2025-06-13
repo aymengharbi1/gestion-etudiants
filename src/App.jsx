@@ -1,5 +1,5 @@
-import React, { useState, useEffect, createContext, useContext } from 'react';
-import { School, Users, BookUser, Book, ClipboardList, Megaphone, LogOut, User, GraduationCap, MessageSquare, Briefcase, ChevronRight, UserCircle, Plus, Edit, Trash2, Search, X, ArrowRightCircle, Save, CalendarDays, BarChart2, ChevronLeft, ChevronRight as ChevronRightIcon, Send, Home, Eye, CheckCircle, XCircle, Clock, BookOpen, Globe, Atom, Calculator, Palette, Settings, Menu } from 'lucide-react';
+import React, { useState, useEffect, createContext, useContext, useRef } from 'react';
+import { School, Users, BookUser, Book, ClipboardList, Megaphone, LogOut, User, GraduationCap, MessageSquare, Briefcase, ChevronRight, UserCircle, Plus, Edit, Trash2, Search, X, ArrowRightCircle, Save, CalendarDays, BarChart2, ChevronLeft, ChevronRight as ChevronRightIcon, Send, Home, Eye, CheckCircle, XCircle, Clock, BookOpen, Globe, Atom, Calculator, Palette, Settings, Menu, Bell, TrendingUp, Printer } from 'lucide-react';
 
 // --- CONTEXTE DE L'APPLICATION ---
 const AppContext = createContext();
@@ -29,8 +29,10 @@ const AppProvider = ({ children }) => {
       { id: 'G05', studentId: 'S202401', subjectId: 'SUB04', examType: 'فرض تأليفي', grade: 18, trimester: 2 },
       { id: 'G06', studentId: 'S202302', subjectId: 'SUB03', examType: 'فرض مراقبة عدد 1', grade: 14.5, trimester: 1 }, 
       { id: 'G07', studentId: 'S202305', subjectId: 'SUB03', examType: 'فرض مراقبة عدد 1', grade: 17, trimester: 1 }, 
+      { id: 'G11', studentId: 'S202204', subjectId: 'SUB02', examType: 'فرض مراقبة عدد 1', grade: 8, trimester: 1 },
+      { id: 'G12', studentId: 'S202204', subjectId: 'SUB03', examType: 'فرض مراقبة عدد 1', grade: 9.5, trimester: 1 },
   ]);
-  const [attendanceRecords, setAttendanceRecords] = useState({ '2025-06-11': { 'S202302': 'present', 'S202305': 'absent', 'S202401': 'present' }, '2025-06-10': { 'S202401': 'present' }, '2025-06-09': { 'S202401': 'absent' }, '2025-06-06': { 'S202401': 'late' } });
+  const [attendanceRecords, setAttendanceRecords] = useState({ '2025-06-11': { 'S202302': 'present', 'S202305': 'absent', 'S202401': 'present' }, '2025-06-10': { 'S202401': 'present' }, '2025-06-09': { 'S202401': 'absent', 'S202204': 'absent' }, '2025-06-06': { 'S202401': 'late' }, '2025-06-05': { 'S202204': 'absent' }, '2025-06-04': { 'S202204': 'absent' }, '2025-06-03': { 'S202204': 'absent' }, '2025-06-02': { 'S202204': 'absent' }, });
   const [announcements, setAnnouncements] = useState([ {id: 'AN01', date: '2025-06-10', title: 'اجتماع أولياء الأمور', content: 'نعلم كافة الأولياء أنه سيتم عقد اجتماع بداية من الساعة الرابعة بعد الزوال يوم الجمعة المقبل لمناقشة النتائج الثلاثية.'}, {id: 'AN02', date: '2025-06-08', title: 'عطلة نهاية السنة الدراسية', content: 'تبدأ عطلة نهاية السنة الدراسية يوم 28 جوان. نتمنى لكم عطلة سعيدة!'}]);
   const [messages, setMessages] = useState([ { id: 'M01', fromId: 'T102', toId: 'PAR01', text: 'مرحبا، كيف حال ابنك أحمد؟', timestamp: new Date().toISOString() } ]);
   const [homeworks, setHomeworks] = useState([ { id: 'HW01', classId: 'C1A', subjectId: 'SUB01', title: 'مراجعة قصيدة', description: 'حفظ أول 3 أبيات من قصيدة "يا ليل"', dueDate: '2025-06-15' }, { id: 'HW02', classId: 'C2B', subjectId: 'SUB03', title: 'تمارين القسمة', description: 'إنجاز التمارين 1, 2, و 5 صفحة 88 من الكتاب المدرسي.', dueDate: '2025-06-14' } ]);
@@ -46,6 +48,12 @@ const AppProvider = ({ children }) => {
         'C1A': { 'Lundi': { 'Séance 1': { subjectId: 'SUB01', teacherId: 'T102' } }, 'Mardi': { 'Séance 2': { subjectId: 'SUB03', teacherId: 'T101' } } },
         'C2B': { 'Lundi': { 'Séance 2': { subjectId: 'SUB03', teacherId: 'T101' } } }
    });
+  const [notifications, setNotifications] = useState([
+    { id: 1, userId: 'PAR01', message: "تم إضافة واجب منزلي جديد في مادة الرياضيات.", read: false },
+    { id: 2, userId: 'PAR01', message: "تم إدخال عدد جديد في مادة اللغة العربية.", read: false },
+    { id: 3, userId: 'T101', message: "رسالة جديدة من ولي التلميذ أحمد بن علي.", read: true },
+  ]);
+
 
   const value = {
       currentUser, 
@@ -67,13 +75,16 @@ const AppProvider = ({ children }) => {
       trimesters, setTrimesters,
       parents, setParents,
       timetables, setTimetables,
+      notifications, setNotifications,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };
 
 // --- COMPOSANT PRINCIPAL ---
-export default function App() { return ( <AppProvider> <style>{`@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap'); .font-cairo { font-family: 'Cairo', sans-serif; }`}</style> <Main /> </AppProvider> ); }
+export default function App() { 
+    return ( <AppProvider> <style>{`@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap'); .font-cairo { font-family: 'Cairo', sans-serif; }`}</style> <Main /> </AppProvider> ); 
+}
 const Main = () => { const { currentUser } = useContext(AppContext); return <div dir="rtl" className="bg-gray-100 min-h-screen font-cairo text-gray-800">{currentUser ? <Dashboard /> : <RoleSelectionScreen />}</div>; };
 
 // --- ÉCRAN DE SÉLECTION DE RÔLE ---
@@ -369,40 +380,56 @@ const TimetableManagement = () => {
         </div>
     );
 };
-const ViewTimetable = () => {
-    const { currentUser, classes, timetables, teachers, students } = useContext(AppContext);
+const ViewTimetable = ({dayFilter}) => {
+    const { currentUser, classes, timetables, teachers, students, schoolYear } = useContext(AppContext);
     
-    let classId = null;
     let title = "جدول الأوقات";
+    let subTitle = currentUser?.name;
     let filteredTimetable = {};
 
     if(currentUser.role === 'parent') {
         const child = students.find(s => s.id === currentUser.childId);
         if(child) {
-            classId = child.classId;
-            const className = classes.find(c=> c.id === classId)?.name || '';
+            const className = classes.find(c=> c.id === child.classId)?.name || '';
             title = `جدول أوقات قسم: ${className}`
-            filteredTimetable = timetables[classId] || {};
+            subTitle= child.name;
         }
     } else if (currentUser.role === 'teacher') {
         title = `جدول أوقاتي`;
         Object.entries(timetables).forEach(([classId, classTimetable]) => {
             Object.entries(classTimetable).forEach(([day, sessions]) => {
-                Object.entries(sessions).forEach(([time, session]) => {
-                    if (session.teacherId === currentUser.id) {
-                        if (!filteredTimetable[day]) filteredTimetable[day] = {};
-                        filteredTimetable[day][time] = session;
-                    }
-                });
+                if(!dayFilter || day === dayFilter){
+                     Object.entries(sessions).forEach(([time, session]) => {
+                        if (session.teacherId === currentUser.id) {
+                            if (!filteredTimetable[day]) filteredTimetable[day] = {};
+                            filteredTimetable[day][time] = session;
+                        }
+                    });
+                }
             });
         });
     }
 
 
     return (
-        <div className="p-6 bg-white rounded-xl shadow-lg">
-            <h2 className="text-2xl font-bold text-gray-700 mb-6">{title}</h2>
-            <TimetableGrid timetableData={filteredTimetable} isEditable={false} />
+        <div id="timetable-view-container" className="p-6 bg-white rounded-xl shadow-lg">
+            <div className="flex justify-between items-center mb-6 no-print">
+                <h2 className="text-2xl font-bold text-gray-700">{title}</h2>
+                {!dayFilter && (
+                    <button onClick={() => window.print()} className="flex items-center bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-700 transition-colors">
+                        <Printer className="w-5 h-5 ml-2" />
+                        طباعة
+                    </button>
+                )}
+            </div>
+            <div id="printable-area">
+                <div className="print-header hidden text-center mb-4">
+                     <h2 className="text-2xl font-bold">Emploi des temps</h2>
+                     <p className="text-lg">{subTitle}</p>
+                     <p className="text-sm text-gray-500">Année Scolaire: {schoolYear}</p>
+                </div>
+                <TimetableGrid timetableData={filteredTimetable} isEditable={false} />
+            </div>
         </div>
     );
 };
@@ -581,7 +608,56 @@ const Messages = () => {
 
 // --- COMPOSANTS TABLEAU DE BORD (HOME) ---
 const AdminDashboard = () => { const { students, teachers, classes, announcements } = useContext(AppContext); return (<div><div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8"><div className="bg-white p-6 rounded-xl shadow-lg flex items-center gap-4"><Users className="w-12 h-12 text-blue-500" /><div><p className="text-gray-500 text-lg">عدد التلاميذ</p><p className="text-3xl font-bold">{students.length}</p></div></div><div className="bg-white p-6 rounded-xl shadow-lg flex items-center gap-4"><BookUser className="w-12 h-12 text-green-500" /><div><p className="text-gray-500 text-lg">عدد المعلمين</p><p className="text-3xl font-bold">{teachers.length}</p></div></div><div className="bg-white p-6 rounded-xl shadow-lg flex items-center gap-4"><School className="w-12 h-12 text-orange-500" /><div><p className="text-gray-500 text-lg">عدد الأقسام</p><p className="text-3xl font-bold">{classes.length}</p></div></div></div><div className="bg-white p-6 rounded-xl shadow-lg"><h3 className="text-xl font-bold text-gray-700 mb-4">آخر الإعلانات</h3><div className="space-y-3">{announcements.slice(0, 3).map(ann => (<div key={ann.id} className="border-b pb-3"><p className="font-semibold text-blue-800">{ann.title}</p><p className="text-sm text-gray-600">{ann.content.substring(0, 100)}...</p><p className="text-xs text-gray-400 mt-1">{ann.date}</p></div>))}</div></div></div>);};
-const TeacherDashboard = () => { const { currentUser, classes, students } = useContext(AppContext); const myClasses = classes.filter(c => c.mainTeacherId === currentUser.id); const myStudentsCount = students.filter(s => myClasses.some(c => c.id === s.classId)).length; return (<div className="grid grid-cols-1 md:grid-cols-2 gap-6"><div className="bg-white p-6 rounded-xl shadow-lg flex items-center gap-4"><School className="w-12 h-12 text-green-500" /><div><p className="text-gray-500 text-lg">الأقسام المسؤولة</p><p className="text-3xl font-bold">{myClasses.length}</p></div></div><div className="bg-white p-6 rounded-xl shadow-lg flex items-center gap-4"><Users className="w-12 h-12 text-blue-500" /><div><p className="text-gray-500 text-lg">مجموع التلاميذ</p><p className="text-3xl font-bold">{myStudentsCount}</p></div></div><div className="md:col-span-2 bg-white p-6 rounded-xl shadow-lg"><h3 className="text-xl font-bold text-gray-700 mb-4">جدول الحصص (قيد الإنشاء)</h3><p className="text-gray-500">سيتم عرض جدول الحصص الخاص بك هنا.</p></div></div>);};
+const TeacherDashboard = () => { const { currentUser, classes, students, timetables, subjects } = useContext(AppContext);
+    const myClasses = classes.filter(c => c.mainTeacherId === currentUser.id);
+    const myStudentsCount = students.filter(s => myClasses.some(c => c.id === s.classId)).length;
+    
+    // For demo purposes, we are fixing the day to Monday
+    const dayOfWeek = 'Lundi'; 
+    const todaysSessions = [];
+
+    Object.entries(timetables).forEach(([classId, classTimetable]) => {
+        if(classTimetable[dayOfWeek]) {
+            Object.entries(classTimetable[dayOfWeek]).forEach(([time, session]) => {
+                if(session.teacherId === currentUser.id) {
+                    todaysSessions.push({
+                        time,
+                        subject: subjects.find(s => s.id === session.subjectId)?.name || '',
+                        class: classes.find(c => c.id === classId)?.name || '',
+                    });
+                }
+            });
+        }
+    });
+
+    return (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-white p-6 rounded-xl shadow-lg flex items-center gap-4"><School className="w-12 h-12 text-green-500" /><div><p className="text-gray-500 text-lg">الأقسام المسؤولة</p><p className="text-3xl font-bold">{myClasses.length}</p></div></div>
+            <div className="bg-white p-6 rounded-xl shadow-lg flex items-center gap-4"><Users className="w-12 h-12 text-blue-500" /><div><p className="text-gray-500 text-lg">مجموع التلاميذ</p><p className="text-3xl font-bold">{myStudentsCount}</p></div></div>
+            <div className="md:col-span-2 bg-white p-6 rounded-xl shadow-lg">
+                <h3 className="text-xl font-bold text-gray-700 mb-4">حصص اليوم ({dayOfWeek})</h3>
+                {todaysSessions.length > 0 ? (
+                    <div className="space-y-4">
+                        {todaysSessions.map(session => (
+                             <div key={session.time} className="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
+                                <div className="flex items-center gap-3">
+                                    <Clock className="w-5 h-5 text-blue-500" />
+                                    <div>
+                                        <p className="font-bold">{session.subject}</p>
+                                        <p className="text-sm text-gray-600">{session.class}</p>
+                                    </div>
+                                </div>
+                                <span className="font-semibold text-gray-800">{session.time}</span>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <p className="text-gray-500">لا توجد حصص مبرمجة لك اليوم.</p>
+                )}
+            </div>
+        </div>
+    );
+};
 const ParentDashboard = () => {
     const { currentUser, students, grades, subjects, announcements, attendanceRecords } = useContext(AppContext);
     const child = students.find(s => s.id === currentUser.childId);
@@ -602,14 +678,71 @@ const ParentDashboard = () => {
         </div>
     );
 };
+const PredictiveAnalysis = ({onViewStudent}) => {
+    const { students, grades, subjects, attendanceRecords, classes } = useContext(AppContext);
 
+    const calculateStudentAverage = (studentId) => {
+        const studentGrades = grades.filter(g => g.studentId === studentId);
+        if (studentGrades.length === 0) return 0;
+        let totalPoints = 0;
+        let totalCoefficients = 0;
+        
+        subjects.forEach(subject => {
+            const subjectGrades = studentGrades.filter(g => g.subjectId === subject.id);
+            if (subjectGrades.length > 0) {
+                const avg = subjectGrades.reduce((acc, g) => acc + g.grade, 0) / subjectGrades.length;
+                totalPoints += avg * subject.coefficient;
+                totalCoefficients += subject.coefficient;
+            }
+        });
+        return totalCoefficients > 0 ? (totalPoints / totalCoefficients) : 0;
+    };
+
+    const countAbsences = (studentId) => {
+        return Object.values(attendanceRecords).filter(record => record[studentId] === 'absent').length;
+    };
+    
+    const atRiskStudents = students.map(student => ({
+        ...student,
+        average: calculateStudentAverage(student.id),
+        absences: countAbsences(student.id),
+    })).filter(student => student.average < 10 || student.absences > 3);
+
+    return (
+        <div className="p-6 bg-white rounded-xl shadow-lg">
+            <h2 className="text-2xl font-bold text-gray-700 mb-6">التحليل التنبئي للنجاح المدرسي</h2>
+            
+            <div className="mb-8">
+                <h3 className="text-xl font-bold text-red-600 mb-4">تلاميذ في خطر</h3>
+                <div className="space-y-3">
+                    {atRiskStudents.length > 0 ? atRiskStudents.map(student => (
+                        <div key={student.id} className="bg-red-50 p-4 rounded-lg flex justify-between items-center">
+                            <div>
+                                <p className="font-bold">{student.name} - <span className="text-sm text-gray-600">{classes.find(c => c.id === student.classId)?.name}</span></p>
+                                <p className="text-sm text-red-700">
+                                    {student.average < 10 && `معدل ضعيف: ${student.average.toFixed(2)}`}
+                                    {student.average < 10 && student.absences > 3 && ' | '}
+                                    {student.absences > 3 && `غيابات متكررة: ${student.absences}`}
+                                </p>
+                            </div>
+                             <button onClick={() => onViewStudent(student.id)} className="text-white bg-red-500 hover:bg-red-600 text-sm font-bold py-1 px-3 rounded-full">إجراء</button>
+                        </div>
+                    )) : <p>لا يوجد تلاميذ في خطر حاليا.</p>}
+                </div>
+            </div>
+        </div>
+    );
+};
 
 // --- TABLEAU DE BORD PRINCIPAL ---
 const Dashboard = () => {
-    const { currentUser, logout } = useContext(AppContext);
+    const { currentUser, logout, notifications, setNotifications } = useContext(AppContext);
     const [activeComponent, setActiveComponent] = useState('home');
     const [viewingStudentId, setViewingStudentId] = useState(null);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [showNotifications, setShowNotifications] = useState(false);
+
+    const userNotifications = notifications.filter(n => n.userId === currentUser.id && !n.read);
 
     const handleViewStudent = (studentId) => {
         setViewingStudentId(studentId);
@@ -620,6 +753,10 @@ const Dashboard = () => {
         setActiveComponent(id);
         setIsSidebarOpen(false); // Fermer le menu sur mobile après un clic
     }
+
+    const handleNotificationClick = (id) => {
+        setNotifications(notifications.map(n => n.id === id ? { ...n, read: true } : n));
+    };
 
     const renderComponent = () => {
         if (activeComponent === 'student-profile') {
@@ -643,28 +780,49 @@ const Dashboard = () => {
             messages: <Messages />,
             schoolyear: <SchoolYearManagement />,
             timetable: {admin: <TimetableManagement/>, teacher: <ViewTimetable />, parent: <ViewTimetable />}[currentUser.role],
+            predictiveanalysis: <PredictiveAnalysis onViewStudent={handleViewStudent} />
         };
         return components[activeComponent.replace(/-/g, '')] || <h2 className="text-3xl font-bold text-gray-700">مرحبا بك (قيد الإنشاء)</h2>;
     };
     
     const menuItems = {
-      admin: [ { id: 'home', label: 'الرئيسية', icon: Home }, { id: 'students', label: 'إدارة التلاميذ', icon: Users }, { id: 'teachers', label: 'إدارة المعلمين', icon: BookUser }, { id: 'parents', label: 'إدارة الأولياء', icon: Users }, { id: 'classes', label: 'إدارة الأقسام', icon: School }, { id: 'subjects', label: 'إدارة المواد', icon: Book }, {id: 'school-year', label: 'السنة الدراسية', icon: Settings}, {id: 'timetable', label: 'إدارة جداول الأوقات', icon: CalendarDays}, { id: 'announcements', label: 'الإعلانات', icon: Megaphone } ],
+      admin: [ { id: 'home', label: 'الرئيسية', icon: Home }, { id: 'students', label: 'إدارة التلاميذ', icon: Users }, { id: 'teachers', label: 'إدارة المعلمين', icon: BookUser }, { id: 'parents', label: 'إدارة الأولياء', icon: Users }, { id: 'classes', label: 'إدارة الأقسام', icon: School }, { id: 'subjects', label: 'إدارة المواد', icon: Book }, {id: 'school-year', label: 'السنة الدراسية', icon: Settings}, {id: 'timetable', label: 'إدارة جداول الأوقات', icon: CalendarDays}, {id: 'predictive-analysis', label: 'التحليل التنبئي', icon: TrendingUp}, { id: 'announcements', label: 'الإعلانات', icon: Megaphone } ],
       teacher: [ { id: 'home', label: 'الرئيسية', icon: Home }, { id: 'my-classes', label: 'أقسامي', icon: School }, { id: 'grades', label: 'إدخال الأعداد', icon: GraduationCap }, { id: 'attendance', label: 'الحضور والغياب', icon: ClipboardList }, {id: 'homework', label: 'الواجبات المنزلية', icon: Book}, {id: 'timetable', label: 'جدول أوقاتي', icon: CalendarDays}, { id: 'announcements', label: 'الإعلانات', icon: Megaphone }, { id: 'messages', label: 'الرسائل', icon: MessageSquare } ],
       parent: [ { id: 'home', label: 'الرئيسية', icon: Home }, { id: 'child-grades', label: 'أعداد ابني/ابنتي', icon: GraduationCap }, { id: 'child-attendance', label: 'حضور ابني/ابنتي', icon: ClipboardList }, { id: 'child-homework', label: 'الواجبات', icon: Book }, {id: 'timetable', label: 'جدول الأوقات', icon: CalendarDays}, { id: 'announcements', label: 'الإعلانات', icon: Megaphone }, { id: 'messages', label: 'الرسائل', icon: MessageSquare } ]
     };
 
     return (
         <div className="relative md:flex h-screen bg-gray-50 overflow-hidden">
-            {/* Overlay pour mobile */}
-            {isSidebarOpen && <div className="fixed inset-0 bg-black bg-opacity-50 z-20 md:hidden" onClick={() => setIsSidebarOpen(false)}></div>}
-
-            <aside className={`fixed top-0 right-0 h-full w-64 bg-white shadow-lg flex flex-col transition-transform duration-300 ease-in-out z-30 ${isSidebarOpen ? 'translate-x-0' : 'translate-x-full'} md:relative md:translate-x-0`}>
+            <style>{`
+                @media print {
+                    body * {
+                        visibility: hidden;
+                    }
+                    #printable-content, #printable-content * {
+                        visibility: visible;
+                    }
+                    #printable-content {
+                        position: absolute;
+                        left: 0;
+                        top: 0;
+                        width: 100%;
+                    }
+                     .no-print {
+                        display: none !important;
+                    }
+                    @page {
+                        size: A4 landscape;
+                        margin: 15mm;
+                    }
+                }
+            `}</style>
+            <aside className="fixed top-0 right-0 h-full w-64 bg-white shadow-lg flex flex-col transition-transform duration-300 ease-in-out z-30 no-print md:relative md:translate-x-0">
                 <div className="h-20 flex items-center justify-center border-b flex-shrink-0"><School className="w-8 h-8 text-blue-600" /><span className="mr-3 font-bold text-xl text-gray-800">فضاء المعهد</span></div>
                 <nav className="flex-1 px-4 py-4 overflow-y-auto"><ul>{(menuItems[currentUser?.role] || []).map(item => (<li key={item.id} className="mb-2"><a href="#" onClick={(e) => { e.preventDefault(); handleMenuItemClick(item.id); }} className={`flex items-center p-3 rounded-lg text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200 ${activeComponent === item.id ? 'bg-blue-100 text-blue-700 font-bold' : ''}`}><item.icon className="w-5 h-5" /><span className="mr-4">{item.label}</span></a></li>))}</ul></nav>
                 <div className="p-4 border-t flex-shrink-0"><button onClick={logout} className="w-full flex items-center justify-center p-3 rounded-lg text-red-600 hover:bg-red-50 transition-colors duration-200"><LogOut className="w-5 h-5"/><span className="mr-3 font-semibold">تسجيل الخروج</span></button></div>
             </aside>
             <div className="flex-1 flex flex-col h-screen overflow-hidden">
-                <header className="h-20 bg-white shadow-sm flex items-center justify-between px-4 md:px-8 flex-shrink-0">
+                <header className="h-20 bg-white shadow-sm flex items-center justify-between px-4 md:px-8 flex-shrink-0 no-print">
                      <div className="flex items-center">
                         <button className="p-2 md:hidden" onClick={() => setIsSidebarOpen(true)}>
                             <Menu className="w-6 h-6 text-gray-700" />
@@ -674,11 +832,29 @@ const Dashboard = () => {
                         </div>
                         <div><h1 className="text-lg md:text-xl font-bold text-gray-800">مرحبا بك، {currentUser?.name}</h1><p className="text-sm text-gray-500 capitalize">{currentUser?.role === 'admin' ? 'مدير' : currentUser?.role === 'teacher' ? 'معلم' : 'ولي'}</p></div>
                      </div>
+                     <div className="relative">
+                        <button onClick={() => setShowNotifications(prev => !prev)} className="p-2 rounded-full hover:bg-gray-100">
+                           <Bell className="w-6 h-6 text-gray-600"/>
+                           {userNotifications.length > 0 && <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"></span>}
+                        </button>
+                        {showNotifications && (
+                            <div className="absolute left-0 mt-2 w-80 bg-white rounded-lg shadow-lg border z-40">
+                                <div className="p-3 font-bold border-b">الإشعارات</div>
+                                <div className="max-h-80 overflow-y-auto">
+                                {userNotifications.length > 0 ? userNotifications.map(notif => (
+                                    <div key={notif.id} className="p-3 border-b hover:bg-gray-50 cursor-pointer" onClick={() => handleNotificationClick(notif.id)}>
+                                        <p className="text-sm">{notif.message}</p>
+                                    </div>
+                                )) : <p className="p-4 text-sm text-gray-500">لا توجد إشعارات جديدة.</p>}
+                                </div>
+                            </div>
+                        )}
+                     </div>
                 </header>
-                <main className="flex-1 p-4 md:p-8 overflow-y-auto">
+                <main id="printable-content" className="flex-1 p-4 md:p-8 overflow-y-auto">
                     {renderComponent()}
                 </main>
-                 <footer className="text-center p-4 text-gray-500 text-sm flex-shrink-0">
+                 <footer className="text-center p-4 text-gray-500 text-sm flex-shrink-0 no-print">
                     Développé par AYMEN GHARBI 2025
                 </footer>
             </div>

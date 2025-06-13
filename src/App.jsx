@@ -1,5 +1,5 @@
 import React, { useState, useEffect, createContext, useContext, useRef } from 'react';
-import { School, Users, BookUser, Book, ClipboardList, Megaphone, LogOut, User, GraduationCap, MessageSquare, Briefcase, ChevronRight, UserCircle, Plus, Edit, Trash2, Search, X, ArrowRightCircle, Save, CalendarDays, BarChart2, ChevronLeft, ChevronRight as ChevronRightIcon, Send, Home, Eye, CheckCircle, XCircle, Clock, BookOpen, Globe, Atom, Calculator, Palette, Settings, Menu, Bell, TrendingUp, Printer, Award, Star, Heart, Brush, Dumbbell, Users2 } from 'lucide-react';
+import { School, Users, BookUser, Book, ClipboardList, Megaphone, LogOut, User, GraduationCap, MessageSquare, Briefcase, ChevronRight, UserCircle, Plus, Edit, Trash2, Search, X, ArrowRightCircle, Save, CalendarDays, BarChart2, ChevronLeft, ChevronRight as ChevronRightIcon, Send, Home, Eye, CheckCircle, XCircle, Clock, BookOpen, Globe, Atom, Calculator, Palette, Settings, Menu, Bell, TrendingUp, Printer, Award, Star, Heart, Brush, Dumbbell, Users2, Mic, Video, FileText } from 'lucide-react';
 
 // --- CONTEXTE DE L'APPLICATION ---
 const AppContext = createContext();
@@ -37,7 +37,7 @@ const AppProvider = ({ children }) => {
   const [attendanceRecords, setAttendanceRecords] = useState({ '2025-06-11': { 'S202302': 'present', 'S202305': 'absent', 'S202401': 'present' }, '2025-06-10': { 'S202401': 'present' }, '2025-06-09': { 'S202401': 'absent', 'S202204': 'absent' }, '2025-06-06': { 'S202401': 'late' }, '2025-06-05': { 'S202204': 'absent' }, '2025-06-04': { 'S202204': 'absent' }, '2025-06-03': { 'S202204': 'absent' }, '2025-06-02': { 'S202204': 'absent' }, });
   const [announcements, setAnnouncements] = useState([ {id: 'AN01', date: '2025-06-10', title: 'اجتماع أولياء الأمور', content: 'نعلم كافة الأولياء أنه سيتم عقد اجتماع بداية من الساعة الرابعة بعد الزوال يوم الجمعة المقبل لمناقشة النتائج الثلاثية.'}, {id: 'AN02', date: '2025-06-08', title: 'عطلة نهاية السنة الدراسية', content: 'تبدأ عطلة نهاية السنة الدراسية يوم 28 جوان. نتمنى لكم عطلة سعيدة!'}]);
   const [messages, setMessages] = useState([ { id: 'M01', fromId: 'T102', toId: 'PAR01', text: 'مرحبا، كيف حال ابنك أحمد؟', timestamp: new Date().toISOString() } ]);
-  const [homeworks, setHomeworks] = useState([ { id: 'HW01', classId: 'C1A', subjectId: 'SUB01', title: 'مراجعة قصيدة', description: 'حفظ أول 3 أبيات من قصيدة "يا ليل"', dueDate: '2025-06-15' }, { id: 'HW02', classId: 'C2B', subjectId: 'SUB03', title: 'تمارين القسمة', description: 'إنجاز التمارين 1, 2, و 5 صفحة 88 من الكتاب المدرسي.', dueDate: '2025-06-14' } ]);
+  const [homeworks, setHomeworks] = useState([ { id: 'HW01', classId: 'C1A', subjectId: 'SUB01', title: 'مراجعة قصيدة', description: 'حفظ أول 3 أبيات من قصيدة "يا ليل"', dueDate: '2025-06-15', skillId: 'skill1', supportKit: {audioUrl: 'audio.mp3', videoUrl: '', keyPoints: 'الانتباه لمخارج الحروف.'}, feedback: 'done' }, { id: 'HW02', classId: 'C2B', subjectId: 'SUB03', title: 'تمارين القسمة', description: 'إنجاز التمارين 1, 2, و 5 صفحة 88 من الكتاب المدرسي.', dueDate: '2025-06-14', skillId: 'skill2', supportKit: {audioUrl: '', videoUrl: 'https://www.youtube.com/embed/S_89z03-UuA', keyPoints: 'لا تنسوا التحقق من صحة العملية.'}, feedback: null } ]);
   const [parents, setParents] = useState([
     { id: 'PAR01', name: 'محمد بن علي', phone: '22123456' },
     { id: 'PAR02', name: 'حنان المزوغي', phone: '23654321' },
@@ -156,17 +156,46 @@ const ClassForm = ({ onSave, classData, onClose }) => { const { teachers } = use
 const SubjectForm = ({ onSave, subject, onClose }) => { const [formData, setFormData] = useState({}); useEffect(() => { setFormData(subject || { id: `SUB${Math.floor(10 + Math.random() * 90)}`, name: '', coefficient: '' }); }, [subject]); const handleChange = (e) => { const { name, value } = e.target; setFormData(prev => ({ ...prev, [name]: value })); }; const handleSubmit = (e) => { e.preventDefault(); onSave(formData); }; return (<form onSubmit={handleSubmit} className="space-y-4"><div><label className="block mb-1 font-semibold">اسم المادة</label><input type="text" name="name" value={formData.name || ''} onChange={handleChange} className="w-full p-2 border rounded-lg" required /></div><div><label className="block mb-1 font-semibold">الضارب (Coefficient)</label><input type="number" step="0.5" name="coefficient" value={formData.coefficient || ''} onChange={handleChange} className="w-full p-2 border rounded-lg" required /></div><div className="mt-8 flex justify-end space-x-4 space-x-reverse"><button type="button" onClick={onClose} className="py-2 px-6 bg-gray-200 rounded-lg font-semibold hover:bg-gray-300">إلغاء</button><button type="submit" className="py-2 px-6 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700">حفظ</button></div></form>); };
 const AnnouncementForm = ({ onSave, announcement, onClose }) => { const [formData, setFormData] = useState({}); useEffect(() => { setFormData(announcement || { id: `AN${Math.floor(10 + Math.random() * 90)}`, title: '', content: '', date: new Date().toISOString().slice(0, 10) }); }, [announcement]); const handleChange = (e) => { const { name, value } = e.target; setFormData(prev => ({ ...prev, [name]: value })); }; const handleSubmit = (e) => { e.preventDefault(); onSave(formData); }; return (<form onSubmit={handleSubmit} className="space-y-4"><div><label className="block mb-1 font-semibold">عنوان الإعلان</label><input type="text" name="title" value={formData.title || ''} onChange={handleChange} className="w-full p-2 border rounded-lg" required /></div><div><label className="block mb-1 font-semibold">محتوى الإعلان</label><textarea name="content" value={formData.content || ''} onChange={handleChange} className="w-full p-2 border rounded-lg h-32" required /></div><div className="mt-8 flex justify-end space-x-4 space-x-reverse"><button type="button" onClick={onClose} className="py-2 px-6 bg-gray-200 rounded-lg font-semibold hover:bg-gray-300">إلغاء</button><button type="submit" className="py-2 px-6 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700">حفظ</button></div></form>); };
 const HomeworkForm = ({ onSave, homework, onClose, classId }) => {
-    const { subjects } = useContext(AppContext);
+    const { subjects, skills } = useContext(AppContext);
     const [formData, setFormData] = useState({});
-    useEffect(() => { setFormData(homework || { id: `HW${Date.now()}`, classId, title: '', description: '', subjectId: '', dueDate: '' }); }, [homework, classId]);
-    const handleChange = (e) => { const { name, value } = e.target; setFormData(prev => ({ ...prev, [name]: value })); };
+    
+    useEffect(() => { 
+        setFormData(homework || { 
+            id: `HW${Date.now()}`, 
+            classId, 
+            title: '', 
+            description: '', 
+            subjectId: '', 
+            dueDate: '',
+            skillId: '',
+            supportKit: { audioUrl: '', videoUrl: '', keyPoints: '' }
+        }); 
+    }, [homework, classId]);
+    
+    const handleChange = (e) => { 
+        const { name, value } = e.target; 
+        if (['audioUrl', 'videoUrl', 'keyPoints'].includes(name)) {
+            setFormData(prev => ({ ...prev, supportKit: { ...prev.supportKit, [name]: value }}));
+        } else {
+            setFormData(prev => ({ ...prev, [name]: value })); 
+        }
+    };
+    
     const handleSubmit = (e) => { e.preventDefault(); onSave(formData); };
+    
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
             <div><label className="block mb-1 font-semibold">المادة</label><select name="subjectId" value={formData.subjectId || ''} onChange={handleChange} className="w-full p-2 border rounded-lg bg-white" required><option value="" disabled>اختر المادة</option>{subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</select></div>
             <div><label className="block mb-1 font-semibold">عنوان الواجب</label><input type="text" name="title" value={formData.title || ''} onChange={handleChange} className="w-full p-2 border rounded-lg" required /></div>
             <div><label className="block mb-1 font-semibold">الوصف</label><textarea name="description" value={formData.description || ''} onChange={handleChange} className="w-full p-2 border rounded-lg h-24" required /></div>
             <div><label className="block mb-1 font-semibold">آخر أجل</label><input type="date" name="dueDate" value={formData.dueDate || ''} onChange={handleChange} className="w-full p-2 border rounded-lg" required /></div>
+            <div className="p-4 border-t-2 mt-4">
+                <h4 className="text-lg font-bold mb-2 text-blue-700">جسر المعرفة</h4>
+                <div><label className="block mb-1 font-semibold">المهارة المرتبطة</label><select name="skillId" value={formData.skillId || ''} onChange={handleChange} className="w-full p-2 border rounded-lg bg-white"><option value="">-- اختر مهارة --</option>{skills.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</select></div>
+                <div><label className="block mb-1 font-semibold">رابط التسجيل الصوتي</label><input type="text" name="audioUrl" value={formData.supportKit?.audioUrl || ''} onChange={handleChange} className="w-full p-2 border rounded-lg" /></div>
+                <div><label className="block mb-1 font-semibold">رابط الفيديو</label><input type="text" name="videoUrl" value={formData.supportKit?.videoUrl || ''} onChange={handleChange} className="w-full p-2 border rounded-lg" /></div>
+                <div><label className="block mb-1 font-semibold">النقاط الأساسية</label><textarea name="keyPoints" value={formData.supportKit?.keyPoints || ''} onChange={handleChange} className="w-full p-2 border rounded-lg h-20" /></div>
+            </div>
             <div className="mt-8 flex justify-end space-x-4 space-x-reverse"><button type="button" onClick={onClose} className="py-2 px-6 bg-gray-200 rounded-lg font-semibold hover:bg-gray-300">إلغاء</button><button type="submit" className="py-2 px-6 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700">حفظ</button></div>
         </form>
     );
@@ -440,9 +469,9 @@ const ViewTimetable = ({dayFilter}) => {
             </div>
             <div id="printable-area">
                 <div className="print-header hidden text-center mb-4">
-                     <h2 className="text-2xl font-bold">Emploi des temps</h2>
+                     <h2 className="text-2xl font-bold">جدول الأوقات</h2>
                      <p className="text-lg">{subTitle}</p>
-                     <p className="text-sm text-gray-500">Année Scolaire: {schoolYear}</p>
+                     <p className="text-sm text-gray-500">السنة الدراسية: {schoolYear}</p>
                 </div>
                 <TimetableGrid timetableData={filteredTimetable} isEditable={false} />
             </div>
@@ -618,7 +647,7 @@ const Messages = () => {
     useEffect(() => { if(currentUser.role === 'parent' && contacts.length > 0) { setActiveConversation(contacts[0].id); } }, [currentUser, contacts.length]);
     const currentMessages = messages.filter(m => (m.fromId === currentUser.id && m.toId === activeConversation) || (m.fromId === activeConversation && m.toId === currentUser.id)).sort((a,b) => new Date(a.timestamp) - new Date(b.timestamp));
     const handleSendMessage = (e) => { e.preventDefault(); if (newMessage.trim() === '' || !activeConversation) return; const msg = { id: `M${Date.now()}`, fromId: currentUser.id, toId: activeConversation, text: newMessage, timestamp: new Date().toISOString() }; setMessages([...messages, msg]); setNewMessage(''); };
-    return (<div className="flex h-[calc(100vh-10rem)] bg-white rounded-xl shadow-lg">{currentUser.role === 'teacher' && (<div className="w-1/3 border-l-2 border-gray-100"><div className="p-4 border-b font-bold text-lg">قائمة الأولياء</div><ul className="overflow-y-auto h-full">{contacts.map(contact => (<li key={contact.id} onClick={() => setActiveConversation(contact.id)} className={`p-4 cursor-pointer hover:bg-gray-50 ${activeConversation === contact.id ? 'bg-blue-50' : ''}`}>{contact.name}</li>))}</ul></div>)}<div className="flex-1 flex flex-col">{activeConversation ? (<><div className="p-4 border-b flex-shrink-0"><h3 className="font-bold">{contacts.find(c=>c.id === activeConversation)?.name}</h3></div><div className="flex-1 p-4 space-y-4 overflow-y-auto">{currentMessages.map(msg => (<div key={msg.id} className={`flex ${msg.fromId === currentUser.id ? 'justify-end' : 'justify-start'}`}><div className={`max-w-xs lg:max-w-md p-3 rounded-2xl ${msg.fromId === currentUser.id ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}><p>{msg.text}</p></div></div>))}</div><form onSubmit={handleSendMessage} className="p-4 border-t flex-shrink-0 flex gap-2"><input type="text" value={newMessage} onChange={(e) => setNewMessage(e.target.value)} placeholder="اكتب رسالتك..." className="flex-1 p-3 border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500" /><button type="submit" className="bg-blue-600 text-white p-3 rounded-full hover:bg-blue-700"><Send className="w-6 h-6"/></button></form></>) : <div className="flex items-center justify-center h-full text-gray-500">الرجاء إختيار محادثة</div>}</div></div>);
+    return (<div className="flex h-[calc(100vh-10rem)] bg-white rounded-xl shadow-lg">{currentUser.role === 'teacher' && (<div className="w-full md:w-1/3 border-l-2 border-gray-100"><div className="p-4 border-b font-bold text-lg">قائمة المحادثات</div><ul className="overflow-y-auto h-full">{contacts.map(contact => (<li key={contact.id} onClick={() => setActiveConversation(contact.id)} className={`p-4 cursor-pointer hover:bg-gray-50 ${activeConversation === contact.id ? 'bg-blue-50' : ''}`}>{contact.name}</li>))}</ul></div>)}<div className="flex-1 flex flex-col">{activeConversation ? (<><div className="p-4 border-b flex-shrink-0"><h3 className="font-bold">{contacts.find(c=>c.id === activeConversation)?.name}</h3></div><div className="flex-1 p-4 space-y-4 overflow-y-auto">{currentMessages.map(msg => (<div key={msg.id} className={`flex ${msg.fromId === currentUser.id ? 'justify-end' : 'justify-start'}`}><div className={`max-w-xs lg:max-w-md p-3 rounded-2xl ${msg.fromId === currentUser.id ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}><p>{msg.text}</p></div></div>))}</div><form onSubmit={handleSendMessage} className="p-4 border-t flex-shrink-0 flex gap-2"><input type="text" value={newMessage} onChange={(e) => setNewMessage(e.target.value)} placeholder="اكتب رسالتك..." className="flex-1 p-3 border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500" /><button type="submit" className="bg-blue-600 text-white p-3 rounded-full hover:bg-blue-700"><Send className="w-6 h-6"/></button></form></>) : <div className="flex items-center justify-center h-full text-gray-500">الرجاء إختيار محادثة</div>}</div></div>);
 };
 
 // --- PASSEPORT DE COMPÉTENCES ---
@@ -1004,7 +1033,7 @@ const Dashboard = () => {
                     }
                 }
             `}</style>
-            <aside className="fixed top-0 right-0 h-full w-64 bg-white shadow-lg flex flex-col transition-transform duration-300 ease-in-out z-30 no-print md:relative md:translate-x-0">
+            <aside className={`fixed top-0 right-0 h-full w-64 bg-white shadow-lg flex flex-col transition-transform duration-300 ease-in-out z-30 no-print md:relative md:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : 'translate-x-full'} `}>
                 <div className="h-20 flex items-center justify-center border-b flex-shrink-0"><School className="w-8 h-8 text-blue-600" /><span className="mr-3 font-bold text-xl text-gray-800">فضاء المعهد</span></div>
                 <nav className="flex-1 px-4 py-4 overflow-y-auto"><ul>{(menuItems[currentUser?.role] || []).map(item => (<li key={item.id} className="mb-2"><a href="#" onClick={(e) => { e.preventDefault(); handleMenuItemClick(item.id); }} className={`flex items-center p-3 rounded-lg text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200 ${activeComponent === item.id ? 'bg-blue-100 text-blue-700 font-bold' : ''}`}><item.icon className="w-5 h-5" /><span className="mr-4">{item.label}</span></a></li>))}</ul></nav>
                 <div className="p-4 border-t flex-shrink-0"><button onClick={logout} className="w-full flex items-center justify-center p-3 rounded-lg text-red-600 hover:bg-red-50 transition-colors duration-200"><LogOut className="w-5 h-5"/><span className="mr-3 font-semibold">تسجيل الخروج</span></button></div>

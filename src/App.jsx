@@ -1,5 +1,5 @@
 import React, { useState, useEffect, createContext, useContext, useRef } from 'react';
-import { School, Users, BookUser, Book, ClipboardList, Megaphone, LogOut, User, GraduationCap, MessageSquare, Briefcase, ChevronRight, UserCircle, Plus, Edit, Trash2, Search, X, ArrowRightCircle, Save, CalendarDays, BarChart2, ChevronLeft, ChevronRight as ChevronRightIcon, Send, Home, Eye, CheckCircle, XCircle, Clock, BookOpen, Globe, Atom, Calculator, Palette, Settings, Menu, Bell, TrendingUp, Printer } from 'lucide-react';
+import { School, Users, BookUser, Book, ClipboardList, Megaphone, LogOut, User, GraduationCap, MessageSquare, Briefcase, ChevronRight, UserCircle, Plus, Edit, Trash2, Search, X, ArrowRightCircle, Save, CalendarDays, BarChart2, ChevronLeft, ChevronRight as ChevronRightIcon, Send, Home, Eye, CheckCircle, XCircle, Clock, BookOpen, Globe, Atom, Calculator, Palette, Settings, Menu, Bell, TrendingUp, Printer, Award, Star, Heart, Brush, Dumbbell, Users2 } from 'lucide-react';
 
 // --- CONTEXTE DE L'APPLICATION ---
 const AppContext = createContext();
@@ -31,6 +31,8 @@ const AppProvider = ({ children }) => {
       { id: 'G07', studentId: 'S202305', subjectId: 'SUB03', examType: 'فرض مراقبة عدد 1', grade: 17, trimester: 1 }, 
       { id: 'G11', studentId: 'S202204', subjectId: 'SUB02', examType: 'فرض مراقبة عدد 1', grade: 8, trimester: 1 },
       { id: 'G12', studentId: 'S202204', subjectId: 'SUB03', examType: 'فرض مراقبة عدد 1', grade: 9.5, trimester: 1 },
+      { id: 'G13', studentId: 'S202302', subjectId: 'SUB01', examType: 'فرض مراقبة عدد 1', grade: 18, trimester: 1 },
+      { id: 'G14', studentId: 'S202302', subjectId: 'SUB02', examType: 'فرض مراقبة عدد 1', grade: 16, trimester: 1 },
   ]);
   const [attendanceRecords, setAttendanceRecords] = useState({ '2025-06-11': { 'S202302': 'present', 'S202305': 'absent', 'S202401': 'present' }, '2025-06-10': { 'S202401': 'present' }, '2025-06-09': { 'S202401': 'absent', 'S202204': 'absent' }, '2025-06-06': { 'S202401': 'late' }, '2025-06-05': { 'S202204': 'absent' }, '2025-06-04': { 'S202204': 'absent' }, '2025-06-03': { 'S202204': 'absent' }, '2025-06-02': { 'S202204': 'absent' }, });
   const [announcements, setAnnouncements] = useState([ {id: 'AN01', date: '2025-06-10', title: 'اجتماع أولياء الأمور', content: 'نعلم كافة الأولياء أنه سيتم عقد اجتماع بداية من الساعة الرابعة بعد الزوال يوم الجمعة المقبل لمناقشة النتائج الثلاثية.'}, {id: 'AN02', date: '2025-06-08', title: 'عطلة نهاية السنة الدراسية', content: 'تبدأ عطلة نهاية السنة الدراسية يوم 28 جوان. نتمنى لكم عطلة سعيدة!'}]);
@@ -53,7 +55,18 @@ const AppProvider = ({ children }) => {
     { id: 2, userId: 'PAR01', message: "تم إدخال عدد جديد في مادة اللغة العربية.", read: false },
     { id: 3, userId: 'T101', message: "رسالة جديدة من ولي التلميذ أحمد بن علي.", read: true },
   ]);
-
+  const [skills, setSkills] = useState([
+    { id: 'skill1', name: 'قراءة قصة', category: 'Académiques', icon: BookOpen },
+    { id: 'skill2', name: 'جداول الضرب', category: 'Académiques', icon: Calculator },
+    { id: 'skill3', name: 'التعاون مع الزملاء', category: 'Socio-émotionnelles', icon: Users2 },
+    { id: 'skill4', name: 'إظهار التعاطف', category: 'Socio-émotionnelles', icon: Heart },
+    { id: 'skill5', name: 'رسم إبداعي', category: 'Créatives et Artistiques', icon: Brush },
+    { id: 'skill6', name: 'مشاركة في الرياضة', category: 'Physiques et Sportives', icon: Dumbbell },
+    { id: 'skill7', name: 'مشروع بيئي', category: 'Citoyennes et Écologiques', icon: Globe },
+  ]);
+  const [studentSkills, setStudentSkills] = useState({
+    'S202401': ['skill1', 'skill3', 'skill5']
+  });
 
   const value = {
       currentUser, 
@@ -76,6 +89,8 @@ const AppProvider = ({ children }) => {
       parents, setParents,
       timetables, setTimetables,
       notifications, setNotifications,
+      skills, setSkills,
+      studentSkills, setStudentSkills,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
@@ -386,17 +401,20 @@ const ViewTimetable = ({dayFilter}) => {
     let title = "جدول الأوقات";
     let subTitle = currentUser?.name;
     let filteredTimetable = {};
+    let classId = null;
 
     if(currentUser.role === 'parent') {
         const child = students.find(s => s.id === currentUser.childId);
         if(child) {
-            const className = classes.find(c=> c.id === child.classId)?.name || '';
+            classId = child.classId;
+            const className = classes.find(c=> c.id === classId)?.name || '';
             title = `جدول أوقات قسم: ${className}`
             subTitle= child.name;
+            filteredTimetable = timetables[classId] || {};
         }
     } else if (currentUser.role === 'teacher') {
         title = `جدول أوقاتي`;
-        Object.entries(timetables).forEach(([classId, classTimetable]) => {
+        Object.entries(timetables).forEach(([cId, classTimetable]) => {
             Object.entries(classTimetable).forEach(([day, sessions]) => {
                 if(!dayFilter || day === dayFilter){
                      Object.entries(sessions).forEach(([time, session]) => {
@@ -412,7 +430,7 @@ const ViewTimetable = ({dayFilter}) => {
 
 
     return (
-        <div id="timetable-view-container" className="p-6 bg-white rounded-xl shadow-lg">
+        <div className="p-6 bg-white rounded-xl shadow-lg no-print">
             <div className="flex justify-between items-center mb-6 no-print">
                 <h2 className="text-2xl font-bold text-gray-700">{title}</h2>
                 {!dayFilter && (
@@ -423,7 +441,7 @@ const ViewTimetable = ({dayFilter}) => {
                 )}
             </div>
             <div id="printable-area">
-                <div className="print-header hidden text-center mb-4">
+                 <div className="print-header hidden text-center mb-4">
                      <h2 className="text-2xl font-bold">Emploi des temps</h2>
                      <p className="text-lg">{subTitle}</p>
                      <p className="text-sm text-gray-500">Année Scolaire: {schoolYear}</p>
@@ -607,7 +625,75 @@ const Messages = () => {
 
 
 // --- COMPOSANTS TABLEAU DE BORD (HOME) ---
-const AdminDashboard = () => { const { students, teachers, classes, announcements } = useContext(AppContext); return (<div><div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8"><div className="bg-white p-6 rounded-xl shadow-lg flex items-center gap-4"><Users className="w-12 h-12 text-blue-500" /><div><p className="text-gray-500 text-lg">عدد التلاميذ</p><p className="text-3xl font-bold">{students.length}</p></div></div><div className="bg-white p-6 rounded-xl shadow-lg flex items-center gap-4"><BookUser className="w-12 h-12 text-green-500" /><div><p className="text-gray-500 text-lg">عدد المعلمين</p><p className="text-3xl font-bold">{teachers.length}</p></div></div><div className="bg-white p-6 rounded-xl shadow-lg flex items-center gap-4"><School className="w-12 h-12 text-orange-500" /><div><p className="text-gray-500 text-lg">عدد الأقسام</p><p className="text-3xl font-bold">{classes.length}</p></div></div></div><div className="bg-white p-6 rounded-xl shadow-lg"><h3 className="text-xl font-bold text-gray-700 mb-4">آخر الإعلانات</h3><div className="space-y-3">{announcements.slice(0, 3).map(ann => (<div key={ann.id} className="border-b pb-3"><p className="font-semibold text-blue-800">{ann.title}</p><p className="text-sm text-gray-600">{ann.content.substring(0, 100)}...</p><p className="text-xs text-gray-400 mt-1">{ann.date}</p></div>))}</div></div></div>);};
+const AdminDashboard = () => { const { students, teachers, classes, announcements, grades, subjects } = useContext(AppContext); 
+    const calculateStudentAverage = (studentId, trimester) => {
+        const studentGrades = grades.filter(g => g.studentId === studentId && g.trimester === trimester);
+        if (studentGrades.length === 0) return 0;
+
+        let totalPoints = 0;
+        let totalCoefficients = 0;
+        
+        const subjectIds = [...new Set(studentGrades.map(g => g.subjectId))];
+
+        subjectIds.forEach(subjectId => {
+            const subject = subjects.find(s => s.id === subjectId);
+            if(subject) {
+                const subjectTrimesterGrades = studentGrades.filter(g => g.subjectId === subjectId);
+                if (subjectTrimesterGrades.length > 0) {
+                    const avg = subjectTrimesterGrades.reduce((acc, g) => acc + g.grade, 0) / subjectTrimesterGrades.length;
+                    totalPoints += avg * subject.coefficient;
+                    totalCoefficients += subject.coefficient;
+                }
+            }
+        });
+        return totalCoefficients > 0 ? (totalPoints / totalCoefficients) : 0;
+    };
+    
+    const topStudents = students.map(s => ({
+        ...s,
+        average: calculateStudentAverage(s.id, 1), // Calculer la moyenne du premier trimestre
+    })).sort((a, b) => b.average - a.average).slice(0, 5);
+
+    const getBadge = (index) => {
+        if(index === 0) return <Award className="w-6 h-6 text-yellow-500" />;
+        if(index === 1) return <Award className="w-6 h-6 text-gray-400" />;
+        if(index === 2) return <Award className="w-6 h-6 text-yellow-800" />;
+        return null;
+    }
+
+    return (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="bg-white p-6 rounded-xl shadow-lg flex items-center gap-4"><Users className="w-12 h-12 text-blue-500" /><div><p className="text-gray-500 text-lg">عدد التلاميذ</p><p className="text-3xl font-bold">{students.length}</p></div></div>
+                <div className="bg-white p-6 rounded-xl shadow-lg flex items-center gap-4"><BookUser className="w-12 h-12 text-green-500" /><div><p className="text-gray-500 text-lg">عدد المعلمين</p><p className="text-3xl font-bold">{teachers.length}</p></div></div>
+            </div>
+             <div className="bg-white p-6 rounded-xl shadow-lg"><h3 className="text-xl font-bold text-gray-700 mb-4">آخر الإعلانات</h3><div className="space-y-3">{announcements.slice(0, 2).map(ann => (<div key={ann.id} className="border-b pb-3"><p className="font-semibold text-blue-800">{ann.title}</p><p className="text-sm text-gray-600">{ann.content.substring(0, 100)}...</p><p className="text-xs text-gray-400 mt-1">{ann.date}</p></div>))}</div></div>
+        </div>
+        <div className="bg-white p-6 rounded-xl shadow-lg">
+            <h3 className="text-xl font-bold text-gray-700 mb-4">أفضل 5 تلاميذ (الثلاثي الأول)</h3>
+            <div className="space-y-3">
+                {topStudents.map((student, index) => (
+                    <div key={student.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-center">
+                            <span className="font-bold text-lg mr-3 text-gray-600">{index + 1}</span>
+                            <UserCircle className="w-10 h-10 text-gray-400 mr-3"/>
+                            <div>
+                                <p className="font-bold text-gray-800">{student.name}</p>
+                                <p className="text-sm text-gray-500">{classes.find(c => c.id === student.classId)?.name}</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center">
+                           <span className="font-bold text-lg text-green-600">{student.average.toFixed(2)}</span>
+                           {getBadge(index)}
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    </div>
+    );
+};
 const TeacherDashboard = () => { const { currentUser, classes, students, timetables, subjects } = useContext(AppContext);
     const myClasses = classes.filter(c => c.mainTeacherId === currentUser.id);
     const myStudentsCount = students.filter(s => myClasses.some(c => c.id === s.classId)).length;
@@ -727,7 +813,7 @@ const PredictiveAnalysis = ({onViewStudent}) => {
                             </div>
                              <button onClick={() => onViewStudent(student.id)} className="text-white bg-red-500 hover:bg-red-600 text-sm font-bold py-1 px-3 rounded-full">إجراء</button>
                         </div>
-                    )) : <p>لا يوجد تلاميذ في خطر حاليا.</p>}
+                    )) : <p>لا توجد إعلانات حاليا.</p>}
                 </div>
             </div>
         </div>

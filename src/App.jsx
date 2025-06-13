@@ -56,13 +56,13 @@ const AppProvider = ({ children }) => {
     { id: 3, userId: 'T101', message: "رسالة جديدة من ولي التلميذ أحمد بن علي.", read: true },
   ]);
   const [skills, setSkills] = useState([
-    { id: 'skill1', name: 'قراءة قصة', category: 'Académiques', icon: BookOpen },
-    { id: 'skill2', name: 'جداول الضرب', category: 'Académiques', icon: Calculator },
-    { id: 'skill3', name: 'التعاون مع الزملاء', category: 'Socio-émotionnelles', icon: Users2 },
-    { id: 'skill4', name: 'إظهار التعاطف', category: 'Socio-émotionnelles', icon: Heart },
-    { id: 'skill5', name: 'رسم إبداعي', category: 'Créatives et Artistiques', icon: Brush },
-    { id: 'skill6', name: 'مشاركة في الرياضة', category: 'Physiques et Sportives', icon: Dumbbell },
-    { id: 'skill7', name: 'مشروع بيئي', category: 'Citoyennes et Écologiques', icon: Globe },
+    { id: 'skill1', name: 'قراءة قصة', category: 'مهارات أكاديمية', icon: BookOpen },
+    { id: 'skill2', name: 'جداول الضرب', category: 'مهارات أكاديمية', icon: Calculator },
+    { id: 'skill3', name: 'التعاون مع الزملاء', category: 'مهارات اجتماعية وعاطفية', icon: Users2 },
+    { id: 'skill4', name: 'إظهار التعاطف', category: 'مهارات اجتماعية وعاطفية', icon: Heart },
+    { id: 'skill5', name: 'رسم إبداعي', category: 'مهارات إبداعية وفنية', icon: Brush },
+    { id: 'skill6', name: 'مشاركة في الرياضة', category: 'مهارات بدنية ورياضية', icon: Dumbbell },
+    { id: 'skill7', name: 'مشروع بيئي', category: 'مهارات مواطنة وبيئية', icon: Globe },
   ]);
   const [studentSkills, setStudentSkills] = useState({
     'S202401': ['skill1', 'skill3', 'skill5']
@@ -401,20 +401,18 @@ const ViewTimetable = ({dayFilter}) => {
     let title = "جدول الأوقات";
     let subTitle = currentUser?.name;
     let filteredTimetable = {};
-    let classId = null;
 
     if(currentUser.role === 'parent') {
         const child = students.find(s => s.id === currentUser.childId);
         if(child) {
-            classId = child.classId;
-            const className = classes.find(c=> c.id === classId)?.name || '';
+            const className = classes.find(c=> c.id === child.classId)?.name || '';
             title = `جدول أوقات قسم: ${className}`
             subTitle= child.name;
-            filteredTimetable = timetables[classId] || {};
+            filteredTimetable = timetables[child.classId] || {};
         }
     } else if (currentUser.role === 'teacher') {
         title = `جدول أوقاتي`;
-        Object.entries(timetables).forEach(([cId, classTimetable]) => {
+        Object.entries(timetables).forEach(([classId, classTimetable]) => {
             Object.entries(classTimetable).forEach(([day, sessions]) => {
                 if(!dayFilter || day === dayFilter){
                      Object.entries(sessions).forEach(([time, session]) => {
@@ -430,7 +428,7 @@ const ViewTimetable = ({dayFilter}) => {
 
 
     return (
-        <div className="p-6 bg-white rounded-xl shadow-lg no-print">
+        <div id="timetable-view-container" className="p-6 bg-white rounded-xl shadow-lg">
             <div className="flex justify-between items-center mb-6 no-print">
                 <h2 className="text-2xl font-bold text-gray-700">{title}</h2>
                 {!dayFilter && (
@@ -441,7 +439,7 @@ const ViewTimetable = ({dayFilter}) => {
                 )}
             </div>
             <div id="printable-area">
-                 <div className="print-header hidden text-center mb-4">
+                <div className="print-header hidden text-center mb-4">
                      <h2 className="text-2xl font-bold">Emploi des temps</h2>
                      <p className="text-lg">{subTitle}</p>
                      <p className="text-sm text-gray-500">Année Scolaire: {schoolYear}</p>
@@ -623,6 +621,108 @@ const Messages = () => {
     return (<div className="flex h-[calc(100vh-10rem)] bg-white rounded-xl shadow-lg">{currentUser.role === 'teacher' && (<div className="w-1/3 border-l-2 border-gray-100"><div className="p-4 border-b font-bold text-lg">قائمة الأولياء</div><ul className="overflow-y-auto h-full">{contacts.map(contact => (<li key={contact.id} onClick={() => setActiveConversation(contact.id)} className={`p-4 cursor-pointer hover:bg-gray-50 ${activeConversation === contact.id ? 'bg-blue-50' : ''}`}>{contact.name}</li>))}</ul></div>)}<div className="flex-1 flex flex-col">{activeConversation ? (<><div className="p-4 border-b flex-shrink-0"><h3 className="font-bold">{contacts.find(c=>c.id === activeConversation)?.name}</h3></div><div className="flex-1 p-4 space-y-4 overflow-y-auto">{currentMessages.map(msg => (<div key={msg.id} className={`flex ${msg.fromId === currentUser.id ? 'justify-end' : 'justify-start'}`}><div className={`max-w-xs lg:max-w-md p-3 rounded-2xl ${msg.fromId === currentUser.id ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}><p>{msg.text}</p></div></div>))}</div><form onSubmit={handleSendMessage} className="p-4 border-t flex-shrink-0 flex gap-2"><input type="text" value={newMessage} onChange={(e) => setNewMessage(e.target.value)} placeholder="اكتب رسالتك..." className="flex-1 p-3 border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500" /><button type="submit" className="bg-blue-600 text-white p-3 rounded-full hover:bg-blue-700"><Send className="w-6 h-6"/></button></form></>) : <div className="flex items-center justify-center h-full text-gray-500">الرجاء إختيار محادثة</div>}</div></div>);
 };
 
+// --- PASSEPORT DE COMPÉTENCES ---
+const SkillsPassport = ({studentId}) => {
+    const { students, skills, studentSkills } = useContext(AppContext);
+    const student = students.find(s => s.id === studentId);
+    
+    if(!student) return <p>التلميذ غير موجود</p>;
+
+    const mySkills = studentSkills[studentId] || [];
+
+    const groupedSkills = skills.reduce((acc, skill) => {
+        const category = skill.category || 'Autres';
+        if (!acc[category]) {
+            acc[category] = [];
+        }
+        acc[category].push(skill);
+        return acc;
+    }, {});
+    
+    return(
+        <div className="p-6 bg-white rounded-xl shadow-lg">
+            <h2 className="text-3xl font-bold text-center text-gray-800 mb-2">جواز سفر المهارات</h2>
+            <p className="text-xl text-center text-gray-600 mb-8">التلميذ: {student.name}</p>
+
+            {Object.entries(groupedSkills).map(([category, skillsInCategory]) => (
+                <div key={category} className="mb-8">
+                    <h3 className="text-2xl font-bold text-blue-700 mb-4 pb-2 border-b-2 border-blue-200">{category}</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                        {skillsInCategory.map(skill => {
+                            const isAcquired = mySkills.includes(skill.id);
+                            const Icon = skill.icon || Star;
+                            return (
+                                <div key={skill.id} className={`p-4 rounded-lg text-center transition-all duration-300 ${isAcquired ? 'bg-green-100 border-2 border-green-500 shadow-md' : 'bg-gray-100 border-2 border-gray-300'}`}>
+                                    <Icon className={`w-12 h-12 mx-auto mb-2 ${isAcquired ? 'text-green-600' : 'text-gray-400'}`} />
+                                    <p className={`font-semibold ${isAcquired ? 'text-green-800' : 'text-gray-600'}`}>{skill.name}</p>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            ))}
+        </div>
+    )
+};
+const SkillsManagement = () => {
+    const { students, skills, studentSkills, setStudentSkills } = useContext(AppContext);
+    const [selectedStudentId, setSelectedStudentId] = useState('');
+
+    const handleToggleSkill = (skillId) => {
+        if(!selectedStudentId) return;
+
+        const currentSkills = studentSkills[selectedStudentId] || [];
+        const newSkills = currentSkills.includes(skillId) 
+            ? currentSkills.filter(id => id !== skillId)
+            : [...currentSkills, skillId];
+        
+        setStudentSkills({
+            ...studentSkills,
+            [selectedStudentId]: newSkills
+        });
+    };
+    
+    const groupedSkills = skills.reduce((acc, skill) => {
+        const category = skill.category || 'Autres';
+        if (!acc[category]) {
+            acc[category] = [];
+        }
+        acc[category].push(skill);
+        return acc;
+    }, {});
+    
+    return(
+         <div className="p-6 bg-white rounded-xl shadow-lg">
+            <h2 className="text-2xl font-bold text-gray-700 mb-6">إدارة المهارات</h2>
+            <div className="mb-6">
+                <label className="block mb-2 font-semibold">اختر تلميذا:</label>
+                <select value={selectedStudentId} onChange={e => setSelectedStudentId(e.target.value)} className="w-full md:w-1/3 p-3 border rounded-lg bg-white">
+                    <option value="">-- التلاميذ --</option>
+                    {students.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                </select>
+            </div>
+            
+            {selectedStudentId && Object.entries(groupedSkills).map(([category, skillsInCategory]) => (
+                <div key={category} className="mb-8">
+                    <h3 className="text-2xl font-bold text-blue-700 mb-4 pb-2 border-b-2 border-blue-200">{category}</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                        {skillsInCategory.map(skill => {
+                             const isAcquired = (studentSkills[selectedStudentId] || []).includes(skill.id);
+                             const Icon = skill.icon || Star;
+                             return(
+                                 <button key={skill.id} onClick={() => handleToggleSkill(skill.id)} className={`p-4 rounded-lg text-center transition-all duration-300 focus:outline-none focus:ring-4 ${isAcquired ? 'bg-green-100 border-2 border-green-500 shadow-md ring-green-200' : 'bg-gray-100 border-2 border-gray-300 hover:bg-gray-200 ring-blue-200'}`}>
+                                     <Icon className={`w-12 h-12 mx-auto mb-2 ${isAcquired ? 'text-green-600' : 'text-gray-400'}`} />
+                                     <p className={`font-semibold ${isAcquired ? 'text-green-800' : 'text-gray-600'}`}>{skill.name}</p>
+                                 </button>
+                             )
+                        })}
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
+};
+
 
 // --- COMPOSANTS TABLEAU DE BORD (HOME) ---
 const AdminDashboard = () => { const { students, teachers, classes, announcements, grades, subjects } = useContext(AppContext); 
@@ -790,7 +890,7 @@ const PredictiveAnalysis = ({onViewStudent}) => {
     
     const atRiskStudents = students.map(student => ({
         ...student,
-        average: calculateStudentAverage(student.id),
+        average: calculateStudentAverage(student.id,1), // Note: only for trimester 1
         absences: countAbsences(student.id),
     })).filter(student => student.average < 10 || student.absences > 3);
 
@@ -813,7 +913,7 @@ const PredictiveAnalysis = ({onViewStudent}) => {
                             </div>
                              <button onClick={() => onViewStudent(student.id)} className="text-white bg-red-500 hover:bg-red-600 text-sm font-bold py-1 px-3 rounded-full">إجراء</button>
                         </div>
-                    )) : <p>لا توجد إعلانات حاليا.</p>}
+                    )) : <p>لا يوجد تلاميذ في خطر حاليا.</p>}
                 </div>
             </div>
         </div>
@@ -866,15 +966,17 @@ const Dashboard = () => {
             messages: <Messages />,
             schoolyear: <SchoolYearManagement />,
             timetable: {admin: <TimetableManagement/>, teacher: <ViewTimetable />, parent: <ViewTimetable />}[currentUser.role],
-            predictiveanalysis: <PredictiveAnalysis onViewStudent={handleViewStudent} />
+            predictiveanalysis: <PredictiveAnalysis onViewStudent={handleViewStudent} />,
+            skillspassport: <SkillsPassport studentId={currentUser.childId} />,
+            skillsmanagement: <SkillsManagement />
         };
         return components[activeComponent.replace(/-/g, '')] || <h2 className="text-3xl font-bold text-gray-700">مرحبا بك (قيد الإنشاء)</h2>;
     };
     
     const menuItems = {
-      admin: [ { id: 'home', label: 'الرئيسية', icon: Home }, { id: 'students', label: 'إدارة التلاميذ', icon: Users }, { id: 'teachers', label: 'إدارة المعلمين', icon: BookUser }, { id: 'parents', label: 'إدارة الأولياء', icon: Users }, { id: 'classes', label: 'إدارة الأقسام', icon: School }, { id: 'subjects', label: 'إدارة المواد', icon: Book }, {id: 'school-year', label: 'السنة الدراسية', icon: Settings}, {id: 'timetable', label: 'إدارة جداول الأوقات', icon: CalendarDays}, {id: 'predictive-analysis', label: 'التحليل التنبئي', icon: TrendingUp}, { id: 'announcements', label: 'الإعلانات', icon: Megaphone } ],
+      admin: [ { id: 'home', label: 'الرئيسية', icon: Home }, { id: 'students', label: 'إدارة التلاميذ', icon: Users }, { id: 'teachers', label: 'إدارة المعلمين', icon: BookUser }, { id: 'parents', label: 'إدارة الأولياء', icon: Users }, { id: 'classes', label: 'إدارة الأقسام', icon: School }, { id: 'subjects', label: 'إدارة المواد', icon: Book }, {id: 'school-year', label: 'السنة الدراسية', icon: Settings}, {id: 'timetable', label: 'إدارة جداول الأوقات', icon: CalendarDays}, {id: 'predictive-analysis', label: 'التحليل التنبئي', icon: TrendingUp}, { id: 'announcements', label: 'الإعلانات', icon: Megaphone }, {id: 'skills-management', label: 'إدارة المهارات', icon: Award} ],
       teacher: [ { id: 'home', label: 'الرئيسية', icon: Home }, { id: 'my-classes', label: 'أقسامي', icon: School }, { id: 'grades', label: 'إدخال الأعداد', icon: GraduationCap }, { id: 'attendance', label: 'الحضور والغياب', icon: ClipboardList }, {id: 'homework', label: 'الواجبات المنزلية', icon: Book}, {id: 'timetable', label: 'جدول أوقاتي', icon: CalendarDays}, { id: 'announcements', label: 'الإعلانات', icon: Megaphone }, { id: 'messages', label: 'الرسائل', icon: MessageSquare } ],
-      parent: [ { id: 'home', label: 'الرئيسية', icon: Home }, { id: 'child-grades', label: 'أعداد ابني/ابنتي', icon: GraduationCap }, { id: 'child-attendance', label: 'حضور ابني/ابنتي', icon: ClipboardList }, { id: 'child-homework', label: 'الواجبات', icon: Book }, {id: 'timetable', label: 'جدول الأوقات', icon: CalendarDays}, { id: 'announcements', label: 'الإعلانات', icon: Megaphone }, { id: 'messages', label: 'الرسائل', icon: MessageSquare } ]
+      parent: [ { id: 'home', label: 'الرئيسية', icon: Home }, { id: 'child-grades', label: 'أعداد ابني/ابنتي', icon: GraduationCap }, { id: 'child-attendance', label: 'حضور ابني/ابنتي', icon: ClipboardList }, { id: 'child-homework', label: 'الواجبات', icon: Book }, {id: 'skills-passport', label: 'جواز سفر المهارات', icon: Star}, {id: 'timetable', label: 'جدول الأوقات', icon: CalendarDays}, { id: 'announcements', label: 'الإعلانات', icon: Megaphone }, { id: 'messages', label: 'الرسائل', icon: MessageSquare } ]
     };
 
     return (
